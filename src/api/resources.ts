@@ -19,7 +19,7 @@ function fileNameFromUrl(url?: string) {
   try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || '') } catch { return '' }
 }
 
-function parseResourceStatus(status: PleromaStatus, instanceUrl: string): Resource | null {
+export function parseResourceStatus(status: PleromaStatus, instanceUrl: string): Resource | null {
   const attachment = status.media_attachments?.[0]
   const text = htmlToText(status.content || '').replace(/\r/g, '').split('\n').map(line => line.trim()).filter(Boolean)
   if (!attachment || !text[0]?.startsWith('📚 ')) return null

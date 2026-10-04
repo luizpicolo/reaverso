@@ -31,6 +31,9 @@ Thumbs.db
 
 # Testes e cobertura
 coverage/
+.playwright-browsers/
+playwright-report/
+test-results/
 
 # Arquivos temporários
 *.tmp
