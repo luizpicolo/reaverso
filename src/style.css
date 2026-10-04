@@ -1331,6 +1331,7 @@ footer {
   gap: 7px;
   width: 245px;
   min-width: 190px;
+  margin-top: 20px;
   padding: 8px 11px;
   background: #f4f6f4;
   border: 1px solid #dfe5e1;
