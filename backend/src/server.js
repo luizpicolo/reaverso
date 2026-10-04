@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm } from 'node:fs/promises'
 import { createWriteStream } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { pipeline } from 'node:stream/promises'
 import Busboy from 'busboy'
 import { sha256File, sha256Buffer } from './crypto/sha256.js'
@@ -25,7 +26,7 @@ const STORAGE_DIR = resolve(process.env.STORAGE_DIR || './data/uploads')
 
 await mkdir(STORAGE_DIR, { recursive: true })
 
-const app = express()
+export const app = express()
 
 app.disable('x-powered-by')
 app.use(express.json({ limit: '64kb' }))
@@ -236,7 +237,7 @@ async function handleUpload(req, res) {
   }
 }
 
-async function verifyEvidenceBuffers({
+export async function verifyEvidenceBuffers({
   originalBuffer,
   manifestBuffer,
   signatureBase64,
@@ -507,6 +508,8 @@ app.use((error, _req, res, _next) => {
   res.status(400).json({ error: message })
 })
 
-app.listen(PORT, HOST, () => {
-  console.log(`REA.fed IPFS API em http://${HOST}:${PORT}`)
-})
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  app.listen(PORT, HOST, () => {
+    console.log(`REA.fed IPFS API em http://${HOST}:${PORT}`)
+  })
+}

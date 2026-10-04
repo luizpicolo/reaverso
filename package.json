@@ -2,9 +2,20 @@
   "name": "rea-federado-frontend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:component": "vitest run tests/component",
+    "test:acceptance": "vitest run tests/acceptance",
+    "test:integration": "npm --prefix backend run test:integration",
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright test",
+    "test:coverage": "vitest run --coverage && npm --prefix backend run test:coverage",
+    "test:all": "npm run test:unit && npm run test:component && npm run test:acceptance && npm run test:integration && npm run test:e2e",
     "preview": "vite preview",
     "backend:install": "npm --prefix backend install",
     "backend:dev": "npm --prefix backend run dev",
@@ -22,6 +33,17 @@
     "vue-router": "latest"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "^4.1.11",
+    "@vue/test-utils": "^2.5.1",
+    "eslint": "^10.12.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "globals": "^17.13.0",
+    "jsdom": "^29.1.1",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^4.1.11",
     "vue-tsc": "latest"
   }
 }
