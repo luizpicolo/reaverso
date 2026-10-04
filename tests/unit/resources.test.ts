@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { listLocalPleromaResources, parseResourceStatus } from '../../src/api/resources'
+import { isOpenEducationalResourceStatus, REA_STATUS_MARKER } from '../../src/api/rea'
 
 const account = { id: 'u1', username: 'ada', acct: 'ada', display_name: 'Ada', url: 'http://pleroma.test/users/ada' }
 const resourceStatus = (id = '10') => ({
@@ -17,6 +18,31 @@ describe('parsing e catálogo de recursos', () => {
     expect(parsed).toMatchObject({ title: 'Álgebra Aberta', area: 'Matemática', license: 'CC BY 4.0', tags: ['algebra'] })
     expect(parsed.ipfs).toMatchObject({ cid: 'QmResource', manifestUrl: 'http://ipfs.test/ipfs/QmManifest' })
     expect(parsed.verification.overall).toBe('verified')
+  })
+
+  it('reconhece apenas publicações REA completas, inclusive no formato legado e em reblogs', () => {
+    const marked = { ...resourceStatus(), content: resourceStatus().content.replace('<p>', `<p>${REA_STATUS_MARKER}<br>`) }
+    const hashtagOnly = {
+      ...resourceStatus('11'),
+      content: '<p>Uma indicação de leitura #REA</p>',
+    }
+    const missingSignature = {
+      ...marked,
+      id: '12',
+      content: marked.content.replace('<br>Assinatura: QmSignature', ''),
+    }
+    const closedLicense = {
+      ...marked,
+      id: '13',
+      content: marked.content.replace('CC BY 4.0', 'Todos os direitos reservados'),
+    }
+
+    expect(isOpenEducationalResourceStatus(marked)).toBe(true)
+    expect(isOpenEducationalResourceStatus(resourceStatus('legacy'))).toBe(true)
+    expect(isOpenEducationalResourceStatus(hashtagOnly)).toBe(false)
+    expect(isOpenEducationalResourceStatus(missingSignature)).toBe(false)
+    expect(isOpenEducationalResourceStatus(closedLicense)).toBe(false)
+    expect(isOpenEducationalResourceStatus({ ...hashtagOnly, reblog: marked })).toBe(true)
   })
 
   it('pagina, filtra e informa progresso sem repetir posts', async () => {

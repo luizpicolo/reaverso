@@ -16,6 +16,7 @@ import {
 } from '../api/pleroma'
 import type { FeedType } from '../types'
 import { useI18n } from 'vue-i18n'
+import { isOpenEducationalResourceStatus } from '../api/rea'
 
 const route = useRoute()
 const router = useRouter()
@@ -70,9 +71,12 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    if (activeFeed.value === 'local') items.value = await getPleromaLocalTimeline(40)
-    else if (activeFeed.value === 'global') items.value = await getPleromaGlobalTimeline(40)
-    else items.value = await getPleromaHomeTimeline(40)
+    const statuses = activeFeed.value === 'local'
+      ? await getPleromaLocalTimeline(40)
+      : activeFeed.value === 'global'
+        ? await getPleromaGlobalTimeline(40)
+        : await getPleromaHomeTimeline(40)
+    items.value = statuses.filter(isOpenEducationalResourceStatus)
     following.value = await getPleromaFollowingAccounts()
     await loadFollowedInstanceTimelines()
   } catch (err) {
@@ -98,8 +102,8 @@ async function loadFollowedInstanceTimelines() {
         getRemoteInstanceTimeline(entry.url, true, 20),
         getRemoteInstanceTimeline(entry.url, false, 20),
       ])
-      entry.local = local
-      entry.global = global
+      entry.local = local.filter(isOpenEducationalResourceStatus)
+      entry.global = global.filter(isOpenEducationalResourceStatus)
     } catch (err) {
       entry.error = err instanceof Error ? err.message : 'Não foi possível carregar esta instância.'
     } finally {

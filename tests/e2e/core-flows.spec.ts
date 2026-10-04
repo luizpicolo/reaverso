@@ -10,6 +10,7 @@ const ipfsResult = {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('rea-fed-locale', 'pt-BR'))
   await page.route('http://pleroma.test/**', async route => {
     const url = route.request().url()
     if (url.endsWith('/api/v1/instance')) return route.fulfill({ json: { title: 'Pleroma local' } })
