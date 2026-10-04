@@ -11,8 +11,11 @@ import {
   Upload,
 } from 'lucide-vue-next'
 import { useAuthStore } from './stores/auth'
+import { useI18n } from 'vue-i18n'
+import LanguageSelector from './components/LanguageSelector.vue'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 onMounted(() => { void auth.hydrate() })
 const route = useRoute()
 const router = useRouter()
@@ -48,32 +51,32 @@ async function submitSearch() {
       <nav>
         <RouterLink v-if="auth.isAuthenticated" to="/feed">
           <House :size="15" />
-          Feed
+          {{ t('nav.feed') }}
         </RouterLink>
 
         <RouterLink v-if="auth.isAuthenticated" to="/users">
           <Users :size="15" />
-          Pessoas
+          {{ t('nav.people') }}
         </RouterLink>
 
         <RouterLink to="/resources">
           <Search :size="15" />
-          Explorar
+          {{ t('nav.explore') }}
         </RouterLink>
 
         <RouterLink to="/federation">
           <Network :size="15" />
-          Plataformas
+          {{ t('nav.platforms') }}
         </RouterLink>
 
         <RouterLink to="/verify">
           <ShieldCheck :size="15" />
-          Verificar
+          {{ t('nav.verify') }}
         </RouterLink>
 
         <RouterLink v-if="auth.isAuthenticated" to="/resources/new">
           <Upload :size="15" />
-          Publicar
+          {{ t('nav.publish') }}
         </RouterLink>
       </nav>
 
@@ -82,21 +85,22 @@ async function submitSearch() {
         <input
           v-model="searchQuery"
           type="search"
-          aria-label="Buscar recursos"
-          placeholder="Buscar recursos..."
+          :aria-label="t('nav.searchLabel')"
+          :placeholder="t('nav.search')"
         />
       </form>
 
       <div class="nav-actions">
+        <LanguageSelector />
         <RouterLink v-if="!auth.isAuthenticated" class="btn ghost" to="/login">
-          Entrar
+          {{ t('nav.login') }}
         </RouterLink>
 
         <template v-else>
           <RouterLink class="avatar" to="/profile">
             {{ auth.user?.name.slice(0, 1) }}
           </RouterLink>
-          <button class="btn ghost" type="button" @click="auth.signOut()">Sair</button>
+          <button class="btn ghost" type="button" @click="auth.signOut()">{{ t('nav.logout') }}</button>
         </template>
       </div>
     </div>
@@ -109,8 +113,8 @@ async function submitSearch() {
   <footer>
     <div>
       <strong>REA.fed</strong>
-      <span> Recursos educacionais abertos em uma rede federada.</span>
+      <span> {{ t('nav.tagline') }}</span>
     </div>
-    <span>Frontend demonstrativo · APIs externas</span>
+    <span>{{ t('nav.demo') }}</span>
   </footer>
 </template>

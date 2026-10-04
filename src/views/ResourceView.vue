@@ -121,7 +121,7 @@ onMounted(async () => {
           </div>
 
           <div v-else-if="identityVerification" class="identity-result" :class="identityVerification.overall === 'verified' ? 'identity-result-ok' : identityVerification.overall === 'pending' ? 'identity-result-pending' : 'identity-result-bad'">
-            <X v-if="identityVerification.overall === 'failed'" :size="22" />
+            <X v-if="identityVerification.overall !== 'verified' && identityVerification.overall !== 'pending'" :size="22" />
             <AlertTriangle v-else-if="identityVerification.overall === 'pending'" :size="22" />
             <CheckCircle2 v-else :size="22" />
             <div>

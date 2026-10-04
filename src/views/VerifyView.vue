@@ -3,6 +3,9 @@ import { computed, ref } from 'vue'
 import { verifyResourceWithIpfsApi } from '../api/ipfs'
 import type { VerificationStatus } from '../types'
 import { ShieldCheck, Upload, AlertTriangle, X, FileCheck2, FileSignature, Clock3, CheckCircle2 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const file = ref<File>()
 const manifest = ref<File>()
@@ -52,7 +55,7 @@ async function verify() {
       ots: ots.value,
     })
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Não foi possível concluir a verificação.'
+    error.value = e instanceof Error ? e.message : t('verify.failure')
   } finally {
     loading.value = false
   }
@@ -62,46 +65,45 @@ async function verify() {
 <template>
   <div class="page">
     <div class="center verify-page">
-      <div class="eyebrow">Verificação pública</div>
-      <h1>Comprove a autenticidade de um recurso</h1>
+      <div class="eyebrow">{{ t('verify.eyebrow') }}</div>
+      <h1>{{ t('verify.title') }}</h1>
       <p class="lead">
-        Para verificar a autoria, não basta enviar somente o arquivo original. Envie também as evidências
-        fornecidas pela plataforma de origem: <strong>manifest.json</strong>, <strong>.sig</strong> e <strong>.ots</strong>.
+        {{ t('verify.lead') }}
       </p>
 
       <div class="verification-explainer">
         <div class="explainer-icon"><ShieldCheck :size="22" /></div>
         <div>
-          <strong>O que será verificado?</strong>
-          <p>O arquivo será comparado ao manifesto, a assinatura será validada e a evidência temporal será conferida pelo serviço de verificação do REA.fed.</p>
+          <strong>{{ t('verify.what') }}</strong>
+          <p>{{ t('verify.whatText') }}</p>
         </div>
       </div>
 
       <div class="card verify-card">
         <div class="section-title-row">
           <div>
-            <h2>1. Arquivo original</h2>
-            <p>Envie exatamente o arquivo que deseja autenticar.</p>
+            <h2>{{ t('verify.original') }}</h2>
+            <p>{{ t('verify.originalText') }}</p>
           </div>
-          <span class="required-badge">Obrigatório</span>
+          <span class="required-badge">{{ t('common.required') }}</span>
         </div>
 
         <label class="dropzone dropzone-primary" :class="{ selected: file }" :for="originalInputId">
           <input :id="originalInputId" type="file" @change="pick('file', $event)" />
           <div class="dropzone-content">
             <div class="upload-icon"><Upload :size="25" /></div>
-            <strong>{{ file?.name || 'Escolha um arquivo ou arraste aqui' }}</strong>
-            <small>{{ file ? `${(file.size / 1000000).toFixed(2)} MB` : 'PDF, documento, apresentação ou outro recurso publicado' }}</small>
+            <strong>{{ file?.name || t('verify.choose') }}</strong>
+            <small>{{ file ? `${(file.size / 1000000).toFixed(2)} MB` : t('verify.fileHint') }}</small>
           </div>
         </label>
-        <button v-if="file" class="remove-file" type="button" @click="clear('file')">Remover arquivo</button>
+        <button v-if="file" class="remove-file" type="button" @click="clear('file')">{{ t('verify.remove') }}</button>
 
         <div class="section-title-row evidence-heading">
           <div>
-            <h2>2. Evidências de autoria</h2>
-            <p>Envie os arquivos que acompanham o recurso publicado.</p>
+            <h2>{{ t('verify.evidence') }}</h2>
+            <p>{{ t('verify.evidenceText') }}</p>
           </div>
-          <span class="evidence-counter">{{ evidenceCount }}/3 selecionados</span>
+          <span class="evidence-counter">{{ t('verify.selected', { count: evidenceCount }) }}</span>
         </div>
 
         <div class="evidence-upload-grid">
@@ -110,7 +112,7 @@ async function verify() {
             <FileCheck2 :size="24" />
             <span class="evidence-type">MANIFESTO</span>
             <strong>{{ manifest?.name || 'manifest.json' }}</strong>
-            <small>{{ manifest ? 'Arquivo selecionado' : 'Arraste ou clique para selecionar' }}</small>
+            <small>{{ manifest ? t('verify.selectedFile') : t('verify.selectEvidence') }}</small>
           </label>
 
           <label class="evidence-dropzone signature-dropzone" :class="{ selected: signature }" :for="signatureInputId">
@@ -118,7 +120,7 @@ async function verify() {
             <FileSignature :size="24" />
             <span class="evidence-type">ASSINATURA</span>
             <strong>{{ signature?.name || 'arquivo.sig' }}</strong>
-            <small>{{ signature ? 'Arquivo selecionado' : 'Arraste ou clique para selecionar' }}</small>
+            <small>{{ signature ? t('verify.selectedFile') : t('verify.selectEvidence') }}</small>
           </label>
 
           <label class="evidence-dropzone" :class="{ selected: ots }" :for="otsInputId">
@@ -126,57 +128,57 @@ async function verify() {
             <Clock3 :size="24" />
             <span class="evidence-type">TIMESTAMP</span>
             <strong>{{ ots?.name || 'arquivo.ots' }}</strong>
-            <small>{{ ots ? 'Arquivo selecionado' : 'Arraste ou clique para selecionar' }}</small>
+            <small>{{ ots ? t('verify.selectedFile') : t('verify.selectEvidence') }}</small>
           </label>
         </div>
 
         <div class="verification-note">
           <CheckCircle2 :size="17" />
-          <span>Esses arquivos devem ter sido obtidos da plataforma que publicou originalmente o recurso.</span>
+          <span>{{ t('verify.note') }}</span>
         </div>
 
         <div class="actions verify-actions">
           <button class="btn primary verify-button" :disabled="!canVerify || loading" @click="verify">
             <ShieldCheck :size="18" />
-            {{ loading ? 'Verificando evidências…' : 'Verificar autoria e integridade' }}
+            {{ loading ? t('verify.submitting') : t('verify.submit') }}
           </button>
         </div>
-        <p v-if="!canVerify && !loading" class="form-hint">Selecione o arquivo original e as três evidências para habilitar a verificação.</p>
+        <p v-if="!canVerify && !loading" class="form-hint">{{ t('verify.hint') }}</p>
       </div>
 
       <div v-if="loading" class="card processing-card">
-        <div class="processing-title"><span class="spinner"></span><strong>Verificando o recurso</strong></div>
-        <p>A API externa está comparando o arquivo com as evidências fornecidas.</p>
+        <div class="processing-title"><span class="spinner"></span><strong>{{ t('verify.processing') }}</strong></div>
+        <p>{{ t('verify.processingText') }}</p>
         <div class="progress"><i></i></div>
       </div>
 
       <div v-if="error" class="card error-card">
-        <div class="status bad"><strong><X :size="18" /> Não foi possível verificar</strong><p>{{ error }}</p></div>
+        <div class="status bad"><strong><X :size="18" /> {{ t('verify.failure') }}</strong><p>{{ error }}</p></div>
       </div>
 
       <div v-if="result" class="card result-card">
         <div v-if="result.overall === 'verified'" class="status ok">
-          <strong><ShieldCheck :size="18" /> Arquivo autêntico</strong>
-          <p>Integridade, assinatura, autoria e evidência temporal foram confirmadas pela API.</p>
+          <strong><ShieldCheck :size="18" /> {{ t('verify.authentic') }}</strong>
+          <p>{{ t('verify.authenticText') }}</p>
         </div>
         <div v-else-if="result.overall === 'altered'" class="status warn">
-          <strong><AlertTriangle :size="18" /> Arquivo não corresponde à evidência</strong>
+          <strong><AlertTriangle :size="18" /> {{ t('verify.altered') }}</strong>
           <p>{{ result.details[0] }}</p>
         </div>
         <div v-else class="status bad">
-          <strong><X :size="18" /> Verificação não confirmada</strong>
+          <strong><X :size="18" /> {{ t('verify.unconfirmed') }}</strong>
           <p>{{ result.details[0] }}</p>
         </div>
 
         <div class="detail-list">
-          <div class="detail"><b>Integridade</b>{{ result.integrity ? '✓ Confirmada' : '✕ Não confirmada' }}</div>
-          <div class="detail"><b>Assinatura</b>{{ result.signature ? '✓ Válida' : '✕ Inválida' }}</div>
-          <div class="detail"><b>Autoria</b>{{ result.authorship ? '✓ Verificável' : '✕ Não verificada' }}</div>
-          <div class="detail"><b>Evidência temporal</b>{{ result.timestamp ? '✓ Confirmada' : '✕ Não confirmada' }}</div>
+          <div class="detail"><b>{{ t('verify.integrity') }}</b>{{ result.integrity ? t('verify.confirmed') : t('verify.notConfirmed') }}</div>
+          <div class="detail"><b>{{ t('verify.signature') }}</b>{{ result.signature ? t('verify.valid') : t('verify.invalid') }}</div>
+          <div class="detail"><b>{{ t('verify.authorship') }}</b>{{ result.authorship ? t('verify.verifiable') : t('verify.notVerified') }}</div>
+          <div class="detail"><b>{{ t('verify.timestamp') }}</b>{{ result.timestamp ? t('verify.confirmed') : t('verify.notConfirmed') }}</div>
         </div>
 
         <details style="margin-top:20px">
-          <summary>Detalhes técnicos</summary>
+          <summary>{{ t('verify.technical') }}</summary>
           <ul><li v-for="d in result.details" :key="d">{{ d }}</li></ul>
         </details>
       </div>

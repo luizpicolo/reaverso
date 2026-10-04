@@ -12,6 +12,7 @@
     "backend:keys": "npm --prefix backend run keys"
   },
   "dependencies": {
+    "@intlify/devtools-types": "^11.4.2",
     "@vitejs/plugin-vue": "latest",
     "lucide-vue-next": "latest",
     "pinia": "latest",
@@ -19,6 +20,7 @@
     "typescript": "latest",
     "vite": "latest",
     "vue": "latest",
+    "vue-i18n": "11.1.12",
     "vue-router": "latest"
   },
   "devDependencies": {

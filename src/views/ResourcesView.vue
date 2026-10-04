@@ -4,9 +4,11 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Search, X } from 'lucide-vue-next'
 import { listLocalPleromaResources } from '../api/resources'
 import type { Resource } from '../types'
+import { useI18n } from 'vue-i18n'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const query = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const items = ref<Resource[]>([])
@@ -69,7 +71,7 @@ async function searchResources(value = query.value) {
     if (currentRequest !== requestId) return
     loading.value = false
     if (!items.value.length) {
-      error.value = err instanceof Error ? err.message : 'Não foi possível carregar os recursos.'
+      error.value = err instanceof Error ? err.message : t('resources.failure')
     }
   }
 }
@@ -129,9 +131,9 @@ onBeforeUnmount(() => { requestId += 1 })
   <div class="page resources-page">
     <div class="section-head">
       <div>
-        <div class="eyebrow">Catálogo local</div>
-        <h2>Explorar recursos</h2>
-        <p>Todos os recursos educacionais publicados localmente nesta instância.</p>
+        <div class="eyebrow">{{ t('resources.eyebrow') }}</div>
+        <h2>{{ t('resources.title') }}</h2>
+        <p>{{ t('resources.lead') }}</p>
       </div>
     </div>
 
@@ -142,8 +144,8 @@ onBeforeUnmount(() => { requestId += 1 })
           v-model="query"
           class="input"
           type="search"
-          placeholder="Busque por título, autor, área, plataforma ou palavra-chave..."
-          aria-label="Buscar recursos educacionais"
+          :placeholder="t('resources.placeholder')"
+          :aria-label="t('resources.label')"
         />
         <button v-if="query" class="search-clear" type="button" aria-label="Limpar busca" @click="clearSearch">
           <X :size="17" />
@@ -151,40 +153,40 @@ onBeforeUnmount(() => { requestId += 1 })
       </div>
       <button class="btn primary search-submit" type="submit" :disabled="loading">
         <Search :size="16" />
-        Buscar recursos
+        {{ t('resources.submit') }}
       </button>
     </form>
 
     <div v-if="query" class="search-summary">
-      <strong>Resultados para:</strong>
+      <strong>{{ t('resources.resultsFor') }}</strong>
       <span>“{{ query }}”</span>
-      <button type="button" @click="clearSearch">Limpar busca</button>
+      <button type="button" @click="clearSearch">{{ t('resources.clear') }}</button>
     </div>
 
     <div v-if="loading && !items.length" class="card resource-search-state">
       <Search :size="24" />
-      <strong>Carregando recursos locais...</strong>
-      <p>Mostrando os primeiros resultados assim que a instância responder.</p>
+      <strong>{{ t('resources.loading') }}</strong>
+      <p>{{ t('resources.loadingHint') }}</p>
     </div>
 
     <div v-else-if="error && !items.length" class="card resource-search-state">
       <Search :size="26" />
-      <strong>Não foi possível carregar os recursos</strong>
+      <strong>{{ t('resources.failure') }}</strong>
       <p>{{ error }}</p>
-      <button class="btn ghost" type="button" @click="searchResources(query)">Tentar novamente</button>
+      <button class="btn ghost" type="button" @click="searchResources(query)">{{ t('common.retry') }}</button>
     </div>
 
     <div v-else-if="!items.length && !loadingMore" class="card resource-search-state">
       <Search :size="26" />
-      <strong>Nenhum recurso encontrado</strong>
-      <p>Não encontramos recursos para essa busca. Tente outro título, autor, área ou palavra-chave.</p>
-      <button class="btn ghost" type="button" @click="clearSearch">Ver todos os recursos</button>
+      <strong>{{ t('resources.empty') }}</strong>
+      <p>{{ t('resources.emptyHint') }}</p>
+      <button class="btn ghost" type="button" @click="clearSearch">{{ t('resources.seeAll') }}</button>
     </div>
 
     <template v-else>
       <div class="resource-catalog-meta">
-        <span>{{ items.length }} recurso{{ items.length === 1 ? '' : 's' }} encontrado{{ items.length === 1 ? '' : 's' }}</span>
-        <span v-if="loadingMore">Atualizando catálogo local…</span>
+        <span>{{ t('resources.found', items.length) }}</span>
+        <span v-if="loadingMore">{{ t('resources.updating') }}</span>
       </div>
 
       <div class="grid resource-results">
@@ -196,18 +198,18 @@ onBeforeUnmount(() => { requestId += 1 })
             <div class="source-logo">{{ resource.sourcePlatform.name.slice(0, 1) }}</div>
             <div>
               <strong style="font-size: 13px">{{ resource.sourcePlatform.name }}</strong>
-              <div style="font-size: 11px; color: #748079">por {{ resource.authors.map(author => author.name).join(', ') }}</div>
+              <div style="font-size: 11px; color: #748079">{{ t('resources.by') }} {{ resource.authors.map(author => author.name).join(', ') }}</div>
             </div>
           </div>
           <div class="resource-foot">
             <span>{{ resource.license }}</span>
-            <span>✓ Verificado</span>
+            <span>✓ {{ t('common.verified') }}</span>
           </div>
         </RouterLink>
       </div>
 
       <div v-if="loadingMore" class="resource-loading-more">
-        Carregando mais recursos locais… (página {{ pagesLoaded }})
+        {{ t('resources.loadingMore', { page: pagesLoaded }) }}
       </div>
     </template>
   </div>
