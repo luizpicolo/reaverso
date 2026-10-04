@@ -15,9 +15,11 @@ import {
   resolvePleromaMediaUrl,
 } from '../api/pleroma'
 import type { FeedType } from '../types'
+import { useI18n } from 'vue-i18n'
 
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
 const items = ref<PleromaTimelineStatus[]>([])
 const following = ref<PleromaAccount[]>([])
 const loading = ref(true)
@@ -31,17 +33,17 @@ const followedInstances = ref<Array<{
   error?: string
 }>>([])
 
-const feedOptions: Array<{ id: FeedType; label: string; description: string }> = [
-  { id: 'local', label: 'Local', description: 'Posts publicados na instância configurada.' },
-  { id: 'following', label: 'Seguindo', description: 'Posts das pessoas que você segue, incluindo contas remotas.' },
-  { id: 'global', label: 'Global', description: 'Posts públicos conhecidos pela sua instância.' },
-]
+const feedOptions = computed<Array<{ id: FeedType; label: string; description: string }>>(() => [
+  { id: 'local', label: t('feed.local'), description: t('feed.localText') },
+  { id: 'following', label: t('feed.following'), description: t('feed.followingText') },
+  { id: 'global', label: t('feed.global'), description: t('feed.globalText') },
+])
 
 const activeFeed = computed<FeedType>(() => {
   const requested = route.query.feed
   return requested === 'local' || requested === 'global' || requested === 'following' ? requested : 'following'
 })
-const activeOption = computed(() => feedOptions.find(item => item.id === activeFeed.value) || feedOptions[1])
+const activeOption = computed(() => feedOptions.value.find(item => item.id === activeFeed.value) || feedOptions.value[1])
 
 function statusAccount(status: PleromaTimelineStatus) {
   return status.reblog?.account || status.account
@@ -114,7 +116,7 @@ async function changeFeed(type: FeedType) {
 onMounted(load)
 
 function dateLabel(value: string) {
-  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value))
+  return new Intl.DateTimeFormat(locale.value, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value))
 }
 </script>
 
@@ -124,14 +126,14 @@ function dateLabel(value: string) {
       <section>
         <div class="section-head feed-head">
           <div>
-            <div class="eyebrow">Sua rede federada</div>
+            <div class="eyebrow">{{ t('feed.eyebrow') }}</div>
             <h2>{{ activeOption.label }}</h2>
             <p>{{ activeOption.description }}</p>
           </div>
-          <button class="btn ghost" type="button" @click="load"><RefreshCw :size="16" /> Atualizar</button>
+          <button class="btn ghost" type="button" @click="load"><RefreshCw :size="16" /> {{ t('common.update') }}</button>
         </div>
 
-        <div class="feed-tabs" role="tablist" aria-label="Tipos de feed">
+        <div class="feed-tabs" role="tablist" :aria-label="t('feed.tabs')">
           <button v-for="option in feedOptions" :key="option.id" class="feed-tab" :class="{ active: activeFeed === option.id }" type="button" role="tab" :aria-selected="activeFeed === option.id" @click="changeFeed(option.id)">
             <House v-if="option.id === 'local'" :size="16" />
             <Users v-else-if="option.id === 'following'" :size="16" />
@@ -141,13 +143,13 @@ function dateLabel(value: string) {
         </div>
 
         <div v-if="error" class="status bad">{{ error }}</div>
-        <div v-if="loading" class="card loading-box">Carregando publicações…</div>
+        <div v-if="loading" class="card loading-box">{{ t('feed.loading') }}</div>
         <div v-else-if="!items.length" class="card empty-box">
           <Network :size="26" />
-          <strong>Nenhum post encontrado</strong>
-          <p v-if="activeFeed === 'following'">Siga usuários para montar seu feed pessoal.</p>
-          <p v-else>Não há posts públicos disponíveis neste momento.</p>
-          <RouterLink v-if="activeFeed === 'following'" class="btn primary" to="/users"><UserPlus :size="15" /> Encontrar pessoas</RouterLink>
+          <strong>{{ t('feed.empty') }}</strong>
+          <p v-if="activeFeed === 'following'">{{ t('feed.followHint') }}</p>
+          <p v-else>{{ t('feed.publicEmpty') }}</p>
+          <RouterLink v-if="activeFeed === 'following'" class="btn primary" to="/users"><UserPlus :size="15" /> {{ t('feed.findPeople') }}</RouterLink>
         </div>
 
         <div v-else class="feed-list">
@@ -164,12 +166,12 @@ function dateLabel(value: string) {
             <div class="social-post-content">{{ postContent(status) }}</div>
             <div v-if="status.media_attachments?.length" class="post-media">
               <a v-for="media in status.media_attachments" :key="media.id" :href="media.url" target="_blank" rel="noopener noreferrer">
-                <img v-if="media.type === 'image' && media.preview_url" :src="mediaPreviewUrl(media.preview_url)" :alt="media.description || media.filename || 'Anexo'" />
-                <span v-else><ExternalLink :size="14" /> {{ media.filename || 'Abrir anexo' }}</span>
+                <img v-if="media.type === 'image' && media.preview_url" :src="mediaPreviewUrl(media.preview_url)" :alt="media.description || media.filename || t('feed.attachment')" />
+                <span v-else><ExternalLink :size="14" /> {{ media.filename || t('feed.openAttachment') }}</span>
               </a>
             </div>
             <div class="post-actions">
-              <a v-if="status.url" class="text-link" :href="status.url" target="_blank" rel="noopener noreferrer">Abrir publicação <ExternalLink :size="13" /></a>
+              <a v-if="status.url" class="text-link" :href="status.url" target="_blank" rel="noopener noreferrer">{{ t('feed.openPost') }} <ExternalLink :size="13" /></a>
             </div>
           </article>
         </div>
@@ -195,15 +197,15 @@ function dateLabel(value: string) {
 
       <aside>
         <div class="card side-card">
-          <div class="eyebrow">Sua rede</div>
-          <h3>{{ following.length }} pessoas seguidas</h3>
-          <p>O feed <strong>Seguindo</strong> usa a timeline inicial da sua conta Pleroma.</p>
+          <div class="eyebrow">{{ t('feed.network') }}</div>
+          <h3>{{ t('feed.people', following.length) }}</h3>
+          <p>{{ t('feed.networkHint') }}</p>
           <RouterLink v-for="account in following.slice(0, 8)" :key="account.id" :to="{ path: '/users' }" class="mini-platform">
             <img v-if="account.avatar" class="mini-avatar" :src="account.avatar" :alt="account.display_name || account.username" />
             <span v-else class="source-logo">{{ (account.display_name || account.username).slice(0, 1) }}</span>
             <span><strong>{{ account.display_name || account.username }}</strong><small>@{{ account.acct }}</small></span>
           </RouterLink>
-          <RouterLink class="btn ghost full" to="/users">Gerenciar pessoas</RouterLink>
+          <RouterLink class="btn ghost full" to="/users">{{ t('feed.manage') }}</RouterLink>
         </div>
       </aside>
     </div>

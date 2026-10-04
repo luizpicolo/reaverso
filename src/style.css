@@ -73,6 +73,28 @@ a {
   gap: 10px
 }
 
+.language-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 8px;
+  border: 1px solid #d9dfdb;
+  border-radius: 9px;
+  color: #52605a;
+  background: white
+}
+
+.language-selector select {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: 0
+}
+
 .btn {
   border: 0;
   border-radius: 10px;
@@ -1309,6 +1331,7 @@ footer {
   gap: 7px;
   width: 245px;
   min-width: 190px;
+  margin-top: 20px;
   padding: 8px 11px;
   background: #f4f6f4;
   border: 1px solid #dfe5e1;

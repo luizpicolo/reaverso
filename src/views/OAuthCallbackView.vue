@@ -2,10 +2,12 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useI18n } from 'vue-i18n'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const { t } = useI18n()
 const error = ref('')
 
 onMounted(async () => {
@@ -19,7 +21,7 @@ onMounted(async () => {
   }
 
   if (!code || !state) {
-    error.value = 'A resposta da instância não contém o código de autorização esperado.'
+    error.value = t('oauth.missingCode')
     return
   }
 
@@ -27,7 +29,7 @@ onMounted(async () => {
     await auth.completeLogin(code, state)
     await router.replace('/feed')
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Não foi possível concluir o login.'
+    error.value = e instanceof Error ? e.message : t('oauth.failure')
   }
 })
 </script>
@@ -37,15 +39,15 @@ onMounted(async () => {
     <div class="center" style="max-width:520px">
       <div class="card">
         <div v-if="!error">
-          <div class="eyebrow">Autenticação</div>
-          <h1>Conectando…</h1>
-          <p class="lead" style="font-size:14px">Estamos concluindo a autorização da sua instância Pleroma.</p>
+          <div class="eyebrow">{{ t('oauth.title') }}</div>
+          <h1>{{ t('oauth.connecting') }}</h1>
+          <p class="lead" style="font-size:14px">{{ t('oauth.connectingText') }}</p>
         </div>
         <div v-else>
-          <div class="eyebrow">Autenticação</div>
-          <h1>Não foi possível entrar</h1>
+          <div class="eyebrow">{{ t('oauth.title') }}</div>
+          <h1>{{ t('oauth.failure') }}</h1>
           <div class="status bad"><p>{{ error }}</p></div>
-          <RouterLink class="btn primary" to="/login">Tentar novamente</RouterLink>
+          <RouterLink class="btn primary" to="/login">{{ t('oauth.retry') }}</RouterLink>
         </div>
       </div>
     </div>

@@ -9,6 +9,9 @@ import {
   resolvePleromaMediaUrl,
   type PleromaAccount,
 } from '../api/pleroma'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const query = ref('')
 const results = ref<PleromaAccount[]>([])
@@ -90,12 +93,12 @@ onMounted(loadFollowing)
   <div class="page">
     <div class="section-head">
       <div>
-        <div class="eyebrow">Rede social federada</div>
-        <h2>Pessoas</h2>
-        <p>Pesquise usuários da federação, siga contas e acompanhe seus posts no feed.</p>
+        <div class="eyebrow">{{ t('users.eyebrow') }}</div>
+        <h2>{{ t('users.title') }}</h2>
+        <p>{{ t('users.lead') }}</p>
       </div>
       <button class="btn ghost" type="button" @click="loadFollowing">
-        <RefreshCw :size="16" /> Atualizar
+        <RefreshCw :size="16" /> {{ t('common.update') }}
       </button>
     </div>
 
@@ -108,18 +111,18 @@ onMounted(loadFollowing)
           <input
             v-model="query"
             class="input"
-            placeholder="Buscar @usuario ou nome…"
+            :placeholder="t('users.placeholder')"
             @keyup.enter="search"
           />
         </div>
         <button class="btn primary" type="button" :disabled="searching" @click="search">
-          <Search :size="16" /> {{ searching ? 'Buscando…' : 'Buscar' }}
+          <Search :size="16" /> {{ searching ? t('users.searching') : t('common.search') }}
         </button>
       </div>
 
-      <div v-if="searching" class="user-state">Pesquisando usuários…</div>
+      <div v-if="searching" class="user-state">{{ t('users.searchState') }}</div>
       <div v-else-if="query.trim() && !visibleResults.length" class="user-state">
-        Nenhum usuário encontrado.
+        {{ t('users.empty') }}
       </div>
       <div v-else-if="visibleResults.length" class="user-list">
         <article v-for="account in visibleResults" :key="account.id" class="user-row">
@@ -130,12 +133,12 @@ onMounted(loadFollowing)
             <span>{{ accountLabel(account) }}</span>
           </div>
           <a class="text-link user-open" :href="account.url" target="_blank" rel="noopener noreferrer">
-            <ExternalLink :size="14" /> Perfil
+            <ExternalLink :size="14" /> {{ t('users.profile') }}
           </a>
           <button class="btn" :class="isFollowing(account) ? 'secondary' : 'primary'" type="button" :disabled="busy.has(account.id)" @click="toggle(account)">
             <UserMinus v-if="isFollowing(account)" :size="15" />
             <UserPlus v-else :size="15" />
-            {{ busy.has(account.id) ? 'Aguarde…' : isFollowing(account) ? 'Seguindo' : 'Seguir' }}
+            {{ busy.has(account.id) ? t('common.wait') : isFollowing(account) ? t('common.following') : t('common.follow') }}
           </button>
         </article>
       </div>
@@ -144,17 +147,17 @@ onMounted(loadFollowing)
     <section class="users-following-section">
       <div class="section-head compact-head">
         <div>
-          <div class="eyebrow">Sua lista</div>
-          <h2>Seguindo</h2>
+          <div class="eyebrow">{{ t('users.yourList') }}</div>
+          <h2>{{ t('users.following') }}</h2>
         </div>
-        <span class="pill">{{ following.length }} contas</span>
+        <span class="pill">{{ t('users.accounts', following.length) }}</span>
       </div>
 
-      <div v-if="loading" class="card user-state">Carregando contas seguidas…</div>
+      <div v-if="loading" class="card user-state">{{ t('users.loading') }}</div>
       <div v-else-if="!following.length" class="card user-state">
         <Users :size="24" />
-        <strong>Você ainda não segue nenhum usuário.</strong>
-        <span>Pesquise uma pessoa acima para começar a acompanhar seus posts.</span>
+        <strong>{{ t('users.noFollowing') }}</strong>
+        <span>{{ t('users.noFollowingText') }}</span>
       </div>
       <div v-else class="user-list card">
         <article v-for="account in following" :key="account.id" class="user-row">
@@ -164,9 +167,9 @@ onMounted(loadFollowing)
             <strong>{{ account.display_name || account.username }}</strong>
             <span>{{ accountLabel(account) }}</span>
           </div>
-          <a class="text-link user-open" :href="account.url" target="_blank" rel="noopener noreferrer">Ver perfil →</a>
+          <a class="text-link user-open" :href="account.url" target="_blank" rel="noopener noreferrer">{{ t('users.viewProfile') }}</a>
           <button class="btn danger" type="button" :disabled="busy.has(account.id)" @click="toggle(account)">
-            <UserMinus :size="15" /> Deixar de seguir
+            <UserMinus :size="15" /> {{ t('users.unfollow') }}
           </button>
         </article>
       </div>
