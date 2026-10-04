@@ -1,5 +1,6 @@
 import { provisionUserKeys } from './ipfs'
 import type { FederationPlatform, Resource } from '../types'
+import { REA_STATUS_MARKER } from './rea'
 
 export interface PleromaConfig {
   instanceUrl: string
@@ -539,7 +540,8 @@ export interface ResourceIpfsEvidence {
 export async function publishResourceToPleroma(config: PleromaConfig, payload: { file: File; title: string; description: string; area: string; type: string; license: string; tags: string[]; visibility: 'public' | 'unlisted' | 'private' | 'direct'; ipfs?: ResourceIpfsEvidence }): Promise<Resource & { status: PleromaStatus }> {
   const { account } = await verifyPleromaConnection(config)
   const media = await uploadPleromaMedia(config, payload.file, payload.description)
-  const hashtagText = payload.tags.filter(Boolean).map(tag => `#${tag.replace(/^#/, '').replace(/\s+/g, '_')}`).join(' ')
+  const resourceTags = payload.tags.some(tag => tag.replace(/^#/, '').toLowerCase() === 'rea') ? payload.tags : [...payload.tags, 'REA']
+  const hashtagText = resourceTags.filter(Boolean).map(tag => `#${tag.replace(/^#/, '').replace(/\s+/g, '_')}`).join(' ')
   const ipfsLines = payload.ipfs ? [
     `IPFS: ${payload.ipfs.resource.cid}`,
     `SHA-256: ${payload.ipfs.resource.sha256}`,
@@ -549,6 +551,7 @@ export async function publishResourceToPleroma(config: PleromaConfig, payload: {
     payload.ipfs.timestamp?.cid ? `Timestamp OTS: ${payload.ipfs.timestamp.cid}` : 'Timestamp OTS: pendente',
   ] : []
   const lines = [
+    REA_STATUS_MARKER,
     `📚 ${payload.title}`,
     payload.description.trim(),
     payload.area.trim() ? `Área: ${payload.area.trim()}` : '',

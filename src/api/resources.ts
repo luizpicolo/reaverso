@@ -1,6 +1,12 @@
 import type { FederationPlatform, Resource } from '../types'
 import { loadPleromaConfig, normalizeInstanceUrl, verifyPleromaConnection } from './pleroma'
 import type { PleromaStatus } from './pleroma'
+import { isOpenEducationalResourceStatus } from './rea'
+export { isOpenEducationalResourceStatus } from './rea'
+
+function statusText(status: PleromaStatus) {
+  return htmlToText(status.content || '').replace(/\r/g, '').split('\n').map(line => line.trim()).filter(Boolean)
+}
 
 function platformFromStatus(instanceUrl: string, status: PleromaStatus): FederationPlatform {
   const host = new URL(normalizeInstanceUrl(instanceUrl)).host
@@ -19,18 +25,19 @@ function fileNameFromUrl(url?: string) {
   try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || '') } catch { return '' }
 }
 
-function parseResourceStatus(status: PleromaStatus, instanceUrl: string): Resource | null {
+export function parseResourceStatus(status: PleromaStatus, instanceUrl: string): Resource | null {
   const attachment = status.media_attachments?.[0]
-  const text = htmlToText(status.content || '').replace(/\r/g, '').split('\n').map(line => line.trim()).filter(Boolean)
-  if (!attachment || !text[0]?.startsWith('📚 ')) return null
+  const text = statusText(status)
+  if (!attachment || !isOpenEducationalResourceStatus(status)) return null
 
-  const title = text[0].replace(/^📚\s*/, '').trim() || attachment.filename || 'Recurso sem título'
+  const titleIndex = text.findIndex(line => line.startsWith('📚 '))
+  const title = text[titleIndex].replace(/^📚\s*/, '').trim() || attachment.filename || 'Recurso sem título'
   const metadata = new Map<string, string>()
   const descriptionLines: string[] = []
   const metadataPrefixes = ['Área:', 'Tipo:', 'Licença:', 'IPFS:', 'SHA-256:', 'Manifesto:', 'Assinatura:', 'Chave pública:', 'Timestamp OTS:']
   let inMetadata = false
 
-  for (const line of text.slice(1)) {
+  for (const line of text.slice(titleIndex + 1)) {
     if (metadataPrefixes.some(prefix => line.startsWith(prefix))) {
       inMetadata = true
       const separator = line.indexOf(':')
