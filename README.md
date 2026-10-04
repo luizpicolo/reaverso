@@ -34,3 +34,7 @@ npm run build
 ```
 
 Os relatórios HTML de cobertura são gravados em `coverage/` e `backend/coverage/`. Falhas E2E preservam um trace em `test-results/` para inspeção pelo Playwright.
+
+## Integração contínua
+
+O workflow `.github/workflows/ci.yml` roda automaticamente em pull requests e em pushes para `main`. Ele executa lint, typecheck, build, testes frontend e backend com cobertura e o E2E no Chromium. Relatórios de cobertura, traces e resultados do Playwright ficam disponíveis como artefatos da execução durante sete dias.

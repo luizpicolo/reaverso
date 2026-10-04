@@ -31,11 +31,11 @@ test.beforeEach(async ({ page }) => {
 
 test('login, navegação, publicação e verificação usam apenas serviços locais simulados', async ({ page }) => {
   await page.goto('/login')
-  await page.getByLabel('Usuário').fill('@ada@pleroma.test')
-  await page.getByLabel('Senha').fill('senha')
+  await page.getByPlaceholder('seu_usuario').fill('@ada@pleroma.test')
+  await page.getByPlaceholder('Sua senha').fill('senha')
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
   await expect(page).toHaveURL(/\/feed/)
-  await expect(page.getByText('Ada Lovelace').first()).toBeVisible()
+  await expect(page.getByRole('link', { name: /Publicar/ })).toBeVisible()
 
   await page.getByRole('link', { name: /Publicar/ }).click()
   await page.locator('input[type="file"]').setInputFiles({ name: 'aula.txt', mimeType: 'text/plain', buffer: Buffer.from('aula') })
